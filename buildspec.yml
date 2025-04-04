@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - apt-get update
+      - apt-get install -y jq mysql-client
+  pre_build:
+    commands:
+      - echo "Retrieving credentials..."
+      - SECRET=$(aws secretsmanager get-secret-value --secret-id mysql/credentials --query SecretString --output text)
+      - DB_USER=$(echo $SECRET | jq -r .username)
+      - DB_PASS=$(echo $SECRET | jq -r .password)
+  build:
+    commands:
+      - chmod +x query_mysql.sh
+      - ./query_mysql.sh "$DB_USER" "$DB_PASS"
