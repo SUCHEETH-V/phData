@@ -1,36 +1,51 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        MYSQL_SECRET_ID = 'mysql-secrets'
-        REGION = 'ap-south-1'
-        MYSQL_HOST = '3.109.56.148'
-        MYSQL_PORT = '3307'
+  environment {
+    AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+    AWS_DEFAULT_REGION    = 'ap-south-1'
+    SECRET_ID             = 'mysql/connection'
+  }
+
+  stages {
+    stage('Checkout Code') {
+      steps {
+        git 'https://github.com/SUCHEETH-V/phData.git'
+      }
     }
 
-    stages {
-        stage('Fetch Secrets') {
-            steps {
-                script {
-                    def secret = sh(
-                        script: "aws secretsmanager get-secret-value --region $REGION --secret-id $MYSQL_SECRET_ID --query SecretString --output text",
-                        returnStdout: true
-                    ).trim()
-                    def json = readJSON text: secret
-                    env.DB_USER = json.username
-                    env.DB_PASS = json.password
-                }
-            }
-        }
+    stage('Fetch MySQL Credentials') {
+      steps {
+        script {
+          def secretJson = sh(
+            script: "aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretString --output text",
+            returnStdout: true
+          ).trim()
 
-        stage('Run Script') {
-            steps {
-                sh """
-                    chmod +x query_employees.sh
-                    ./query_employees.sh $DB_USER $DB_PASS $MYSQL_HOST $MYSQL_PORT
-                """
-            }
+          def creds = readJSON text: secretJson
+
+          env.MYSQL_HOST = creds.host
+          env.MYSQL_PORT = creds.port
+          env.MYSQL_USER = creds.username
+          env.MYSQL_PASS = creds.password
         }
+      }
     }
+
+    stage('Run Query Script') {
+      steps {
+        sh './query_employees.sh'
+      }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Query executed successfully.'
+    }
+    failure {
+      echo '❌ Failed. Check logs.'
+    }
+  }
 }
-
