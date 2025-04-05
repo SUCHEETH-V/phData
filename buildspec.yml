@@ -16,5 +16,5 @@ phases:
   build:
     commands:
       - echo Running MySQL query...
-      - chmod +x query_employee.sh
-      - ./query_employee.sh
+      - chmod +x query_employees.sh
+      - ./query_employees.sh
