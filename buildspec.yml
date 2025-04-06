@@ -2,19 +2,23 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      python: 3.8
     commands:
       - echo Installing mysql-client, jq, awscli...
       - apt-get update && apt-get install -y mysql-client jq awscli
+
   pre_build:
     commands:
       - echo Fetching credentials from Secrets Manager...
-      - SECRET=$(aws secretsmanager get-secret-value --secret-id mysql/connection --query SecretString --output text)
+      - SECRET=$(aws secretsmanager get-secret-value --secret-id mysql-secrets --query SecretString --output text)
       - MYSQL_USER=$(echo $SECRET | jq -r .username)
       - MYSQL_PASS=$(echo $SECRET | jq -r .password)
       - MYSQL_HOST=$(echo $SECRET | jq -r .host)
       - MYSQL_PORT=$(echo $SECRET | jq -r .port)
+
   build:
     commands:
-      - echo Running MySQL query...
+      - echo Running MySQL query script...
       - chmod +x query_employees.sh
-      - ./query_employees.sh
+      - ./query_employees.sh "$MYSQL_HOST" "$MYSQL_PORT" "$MYSQL_USER" "$MYSQL_PASS"
