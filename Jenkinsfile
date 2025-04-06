@@ -42,10 +42,10 @@ pipeline {
 
   post {
     success {
-      echo '✅ Query executed successfully.'
+      echo '✅ Query executed successfully!'
     }
     failure {
-      echo '❌ Failed. Check logs.'
+      echo '❌ Failed. Check logs!'
     }
   }
 }
