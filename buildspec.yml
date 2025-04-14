@@ -11,7 +11,7 @@ phases:
   pre_build:
     commands:
       - echo Fetching credentials from AWS Secrets Manager...
-      - SECRET=$(aws secretsmanager get-secret-value --secret-id mysql-secrets-new --query SecretString --output text)
+      - SECRET=$(aws secretsmanager get-secret-value --secret-id mysql-secrets_new --query SecretString --output text)
       - echo "Secret fetched"
       - MYSQL_USER=$(echo $SECRET | jq -r .username_new)
       - MYSQL_PASS=$(echo $SECRET | jq -r .password_new)
