@@ -11,12 +11,12 @@ phases:
   pre_build:
     commands:
       - echo Fetching credentials from AWS Secrets Manager...
-      - SECRET=$(aws secretsmanager get-secret-value --secret-id mysql-secrets --query SecretString --output text)
+      - SECRET=$(aws secretsmanager get-secret-value --secret-id mysql-secrets-new --query SecretString --output text)
       - echo "Secret fetched"
-      - MYSQL_USER=$(echo $SECRET | jq -r .username)
-      - MYSQL_PASS=$(echo $SECRET | jq -r .password)
-      - MYSQL_HOST=$(echo $SECRET | jq -r .host)
-      - MYSQL_PORT=$(echo $SECRET | jq -r .port)
+      - MYSQL_USER=$(echo $SECRET | jq -r .username_new)
+      - MYSQL_PASS=$(echo $SECRET | jq -r .password_new)
+      - MYSQL_HOST=$(echo $SECRET | jq -r .host_new)
+      - MYSQL_PORT=$(echo $SECRET | jq -r .port_new)
 
   build:
     commands:
